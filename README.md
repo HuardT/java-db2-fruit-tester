@@ -1,9 +1,9 @@
 # quarkus-db2-tester
 
-This project is a dummy quarkus app aimed to reproduce real world problem faced on a Kubernetes cluster, calling a IBM DB2 ZOS database.
-The goal is to reproduce long blocking IO when establishing new connection to the DB2.
+This project is a dummy java app aimed to reproduce real world problem faced on a Kubernetes cluster, calling a IBM DB2 ZOS database.
+The goal is to reproduce long execution time when establishing new connection to the DB2.
 
-The application consists on a simple quarkus app which exposes fruits, that are stored on a DB2 database.
+The application consists on a simple java app which retrieves fruits, that are stored on a DB2 database.
 The application is then deployed in a docker container and its resources (CPU and Memory) are limited via a docker compose service to mimic resources allocation on the real k8s cluster.
 
 ## Compile app and build image
