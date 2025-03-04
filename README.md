@@ -1,4 +1,4 @@
-# quarkus-db2-tester
+# java-db2-fruit-tester
 
 This project is a dummy java app aimed to reproduce real world problem faced on a Kubernetes cluster, calling a IBM DB2 ZOS database.
 The goal is to reproduce long execution time when establishing new connection to the DB2.
