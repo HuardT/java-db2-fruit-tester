@@ -1,0 +1,85 @@
+name: java-db2-fruit-tester
+services:
+  java:
+    build:
+      context: ../../.. # set the context at root of the project
+      dockerfile: ./src/main/docker/Dockerfile.jvm
+    environment:
+      GC_CONTAINER_OPTIONS: "-Djavax.net.debug=ssl:handshake"
+      OTEL_SERVICE_NAME: "java-db2-fruit-tester"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_RESOURCE_ATTRIBUTES: service.name=java-db2-tester,service.instance.id=java-db2-tester,env=dev
+      OTEL_LOGS_EXPORTER: "otlp"
+      OTEL_METRIC_EXPORT_INTERVAL: 500
+      OTEL_BSP_SCHEDULE_DELAY: 500
+    ports:
+      - "9991:9991"
+    volumes:
+      - "../../../tmp/trace:/tmp/trace"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 500M
+        reservations:
+          cpus: '0.05'
+          memory: 350M
+    depends_on:
+      db2:
+        condition: service_healthy
+      liquibase:
+        condition: service_completed_successfully
+      lgtm:
+        condition: service_healthy
+  db2:
+    image: icr.io/db2_community/db2:12.1.0.0
+    privileged: true
+    ports:
+      - "50000:50000"
+    environment:
+      LICENSE: accept
+      DB2INST1_PASSWORD: password
+      DBNAME: DB2LOCAL
+    healthcheck:
+      test: "su - db2inst1 -c \"db2 connect to DB2LOCAL user DB2INST1 using password\""
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 1m30s
+      start_interval: 20s
+  liquibase:
+    image: liquibase:latest
+    depends_on:
+      db2:
+        condition: service_healthy
+    deploy:
+      restart_policy: # Sometimes the db2 returns ready but is not fully available
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    volumes:
+      - ./liquibase:/liquibase/changelog
+    command:
+      - "--liquibase-schema-name=DB2LOCAL"
+      - "--searchPath=/liquibase/changelog"
+      - "--changeLogFile=changeLog-root.xml"
+      - "--url=jdbc:db2://db2:50000/DB2LOCAL:currentSchema=DB2LOCAL;"
+      - "--username=DB2INST1"
+      - "--password=password"
+      - "update"
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    ports:
+      - "8030:3000"
+      - "8017:4317"
+    environment:
+      ENABLE_LOGS_OTELCOL: true
+      ENABLE_LOGS_TEMPO: true
+    healthcheck:
+      test: "[ -f /tmp/ready ]"
+      start_period: 15s
+      start_interval: 10s
+      retries: 5
+      timeout: 10s
+      interval: 1m

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="1" author="quarkus">
+        <createTable tableName="FRUIT">
+            <column name ="ID" type="char(25)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="NAME" type="char(30)" />
+            <column name="COLOR" type="char(30)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="quarkus">
+        <insert tableName="FRUIT">
+            <column name="ID" value="1"/>
+            <column name="NAME" value="apple"/>
+            <column name="COLOR" value="red"/>
+        </insert>
+        <insert tableName="FRUIT">
+            <column name="ID" value="2"/>
+            <column name="NAME" value="orange"/>
+            <column name="COLOR" value="orange"/>
+        </insert>
+        <insert tableName="FRUIT">
+            <column name="ID" value="3"/>
+            <column name="NAME" value="berry"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
